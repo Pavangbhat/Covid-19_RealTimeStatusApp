@@ -1,56 +1,63 @@
-import React from "react"
-import {View,Text,StyleSheet,FlatList,ActivityIndicator,ScrollView} from "react-native"
-import {Card,Button,Icon} from "react-native-elements"
+import React,{useState,useEffect} from "react"
+import {
+          View,
+          Text,
+          StyleSheet,
+          FlatList,
+          ActivityIndicator,
+          ScrollView,
+          Alert,
+        } from "react-native"
+import {
+        Card,
+        Button,
+        Icon,
+       } from "react-native-elements"
 
-export default class App extends React.Component{
-  constructor(props){
-    super(props)
-    this.state={
-      responseIsSucessful:true,
-      isLoading:true,
-      dataReceivedOfStates:[],
-      gobalConform:"",
-      gobalRecovered:"",
-      gobalDeath:""      
-    }
-  }
-  getData=()=>{
-    fetch('https://api.rootnet.in/covid19-in/stats/latest')
-    .then(res=>res.json())
-    .then(response => {
-        this.setState({
-        dataReceivedOfStates:response.data.regional
+function App(){
+  const [isLoading,SetisLoading]=useState(true);
+  const [dataReceivedOfStates,SetdataReceivedOfStates]=useState([]);
+  const [gobalConform,SetgobalConform]=useState("");
+  const [gobalRecovered,SetgobalRecovered]=useState("");
+  const [gobalDeath,SetgobalDeath]=useState("");
+    getData=()=>{
+      fetch('https://api.rootnet.in/covid19-in/stats/latest')
+      .then(res=>res.json())
+      .then(response => {
+        //   this.setState({
+        //   dataReceivedOfStates:response.data.regional
+        // })
+        SetdataReceivedOfStates(response.data.regional);
+      
       })
-    
-    })
-    .catch(err => console.log(err))
-    
-    //Get gobal data
-    fetch("https://covid19.mathdro.id/api")
-    .then(res=>res.json())
-    .then(response =>{
-        this.setState({
-          gobalConform:response.confirmed.value,
-          gobalRecovered:response.recovered.value,
-          gobalDeath:response.deaths.value,
-          isLoading:false
-        })
-    })
-    .catch(err => console.log(err))
-  }
+      .catch(err=>console.log(err))
+      
+      //Get gobal data
+      fetch("https://covid19.mathdro.id/api")
+      .then(res=>res.json())
+      .then(response =>{
+          // this.setState({
+          //   gobalConform:response.confirmed.value,
+          //   gobalRecovered:response.recovered.value,
+          //   gobalDeath:response.deaths.value,
+          //   isLoading:false
+          // })
+          SetgobalConform(response.confirmed.value)
+          SetgobalRecovered(response.recovered.value)
+          SetgobalDeath(response.deaths.value)
+          SetisLoading(false)
+      })
+      .catch(err => console.log(err))
+    }
+  
+  useEffect(()=>{
+    getData()
+  })
   refresh=()=>{
-    this.setState({
-      isLoading:true
-    })
-    this.forceUpdate();
-    this.getData();
-    this.forceUpdate();
+    SetisLoading(true)
+    getData();
   }
-  componentDidMount(){
-    this.getData()
-  }
-  render(){
-    if(this.state.isLoading){
+    if(isLoading){
       return(
             <View style={{flex:1,alignItems:"center",justifyContent:"center",backgroundColor:"grey"}}>
                 <ActivityIndicator 
@@ -82,7 +89,7 @@ export default class App extends React.Component{
                   dividerStyle={{backgroundColor:"white",height:2}}
                   >
                   <Text style={styles.dataText}>
-                    {this.state.gobalConform}
+                    {gobalConform}
                   </Text>
                   </Card>
 
@@ -93,7 +100,7 @@ export default class App extends React.Component{
                   dividerStyle={{backgroundColor:"white",height:2}}
                   >
                   <Text style={styles.dataText}>
-                    {this.state.gobalRecovered}
+                    {gobalRecovered}
                   </Text>
                   </Card>
                   <Card
@@ -103,7 +110,7 @@ export default class App extends React.Component{
                   dividerStyle={{backgroundColor:"white",height:2}}
                   >
                   <Text style={styles.dataText}>
-                    {this.state.gobalDeath}
+                    {gobalDeath}
                   </Text>
                   </Card>
             </Card>
@@ -114,7 +121,7 @@ export default class App extends React.Component{
               dividerStyle={{backgroundColor:"white",height:2}}
             >
               <FlatList
-              data={this.state.dataReceivedOfStates}
+              data={dataReceivedOfStates}
               keyExtractor={(key,index)=>key.loc}
               renderItem={({item})=>(
                <Card
@@ -149,13 +156,13 @@ export default class App extends React.Component{
               title="Refresh"
               titleStyle={{fontSize:25,color:"white",fontWeight:"bold",paddingLeft:10}}
               type='clear'
-              onPress={()=>{this.refresh()}}
+              onPress={()=>{refresh()}}
             />
          </ScrollView>
       </View>
     )
   }
-}
+
 
 const styles=StyleSheet.create({
   headerContainer:{
@@ -179,3 +186,4 @@ const styles=StyleSheet.create({
   },
 
 })
+export default  App
